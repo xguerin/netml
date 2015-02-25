@@ -1,0 +1,6 @@
+include_rules
+
+OFLAGS  += -I ../order
+
+: foreach *.mli                     |> !mli |> %B.cmi | %B.cmti
+: foreach *.ml | *.cmi ../<orders>  |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot

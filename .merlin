@@ -1,0 +1,8 @@
+PKG str core bitstring 
+
+S netml
+
+B build-default/benchmarks
+B build-default/netml
+B build-default/tests
+B build-default/tools
