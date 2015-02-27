@@ -7,15 +7,16 @@ let spec =
   empty
   +> anon ("filename" %: file)
 
-let rec skip_to_ipv4 ts len proto =
+let rec skip_to_ipv4 ts proto =
   let open NetStack.Ethernet in
   let open NetStack.Ethernet.Protocol in
   let open Option.Monad_infix in
   match proto with
-  | Length l    ->  printf "len %d\n" l; None
-  | IPv4 b      ->  printf "IPv4\n"; Some b
-  | VLAN b      ->  printf "VLAN\n";
-                    (NetStack.VLAN.decode (len, b)) >>= fun (len, vlan) -> skip_to_ipv4 ts len vlan.VLAN.protocol
+  | Length l        ->  printf "len %d\n" l; None
+  | IPv4 (len, bs)  ->  NetStack.IPv4.decode (len, bs)
+  | VLAN (len, bs)  ->  printf "VLAN ";
+                        NetStack.VLAN.decode (len, bs) >>= fun vlan ->
+                        skip_to_ipv4 ts vlan.VLAN.protocol
   | Unsupported ->  printf "Unsupported\n"; None
 
 let iterator ~ts ~data ~len =
@@ -25,7 +26,11 @@ let iterator ~ts ~data ~len =
   let open NetStack.VLAN in
   let open Option.Monad_infix in
   ignore (
-    NetStack.Ethernet.decode (len, data) >>= fun (len, eth) -> skip_to_ipv4 ts len eth.protocol
+    NetStack.Ethernet.decode (len, data) >>= fun eth ->
+    printf "%s " (NetStack.Ethernet.to_string eth);
+    skip_to_ipv4 ts eth.protocol >>= fun ip ->
+    printf "%s\n" (NetStack.IPv4.to_string ip);
+    Some ip.IPv4.protocol
   )
 
 let operation filename =
