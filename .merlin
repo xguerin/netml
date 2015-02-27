@@ -1,8 +1,9 @@
 PKG str core bitstring 
+FLG -rectypes
 
-S netml
+S src
 
 B build-default/benchmarks
-B build-default/netml
+B build-default/src
 B build-default/tests
 B build-default/tools

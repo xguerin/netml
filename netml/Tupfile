@@ -1,7 +1,0 @@
-include_rules
-
-PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
-
-: foreach *.mli         |> !mli |> %B.cmi | %B.cmti ../<orders>
-: foreach *.ml | *.cmi  |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot ../<orders>
-

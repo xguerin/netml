@@ -1,0 +1,9 @@
+include_rules
+
+PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
+SOURCES   = NetML_Stack.ml NetML_PCap.ml
+
+: foreach *.mli               |> !mli |> %B.cmi | %B.cmti ../<lib>
+: foreach $(SOURCES) | *.cmi  |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+
+: NetML.ml | *.cmx            |> !ml  |> %B.o | %B.cmx | %B.cmi | %B.cmt | %B.annot ../<lib>

@@ -1,9 +1,10 @@
 include_rules
 
 PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
-OFLAGS    += -I ../netml
+OFLAGS    += -I ../src
+CMXLIBS   += ../src/NetML_PCap.cmx ../src/NetML_Stack.cmx ../src/NetML.cmx 
 
-: foreach *.mli                     |> !mli |> %B.cmi | %B.cmti
-: foreach *.ml | *.cmi ../<orders>  |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot
+: foreach *.mli                 |> !mli |> %B.cmi | %B.cmti
+: foreach *.ml | *.cmi ../<lib> |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot
 
-: ../netml/PCap.cmx ../netml/NetStack.cmx PCap_parser.cmx | PCap_parser.o  |> !lnk |> ../bin/pcap_parser
+: $(CMXLIBS) PCap_parser.cmx | PCap_parser.o  |> !lnk |> ../bin/pcap_parser
