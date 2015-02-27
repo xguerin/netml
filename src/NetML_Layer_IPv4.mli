@@ -1,6 +1,5 @@
 open Bitstring
 open Core.Std
-open NetML_Layer_UDP
 
 module Address : sig
   type t = int * int * int * int
@@ -9,7 +8,7 @@ end
 
 module Protocol : sig
   type t =
-    | TCP of Bitstring.t
+    | TCP of NetML_Layer_TCP.t
     | UDP of NetML_Layer_UDP.t
     | Unsupported
 

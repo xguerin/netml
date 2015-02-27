@@ -4,6 +4,7 @@ PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
 OFLAGS    += -I ../src
 
 CMXLIBS   =                       \
+  ../src/NetML_Layer_TCP.cmx      \
   ../src/NetML_Layer_UDP.cmx      \
   ../src/NetML_Layer_IPv4.cmx     \
   ../src/NetML_Layer_Ethernet.cmx \

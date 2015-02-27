@@ -12,9 +12,11 @@ let process_l3 proto =
   match proto with
   | UDP udp ->
       printf "%s\n" (NetML.Layer.UDP.to_string udp);
-      Some udp
+      Some proto
+  | TCP tcp ->
+      printf "%s\n" (NetML.Layer.TCP.to_string tcp);
+      Some proto
   | Unsupported -> printf " ??? \n"; None
-  | _ -> printf " ??? \n"; None
 
 let process_l2 proto =
   let open NetML.Layer.Ethernet.Protocol in
