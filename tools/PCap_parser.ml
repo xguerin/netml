@@ -1,33 +1,45 @@
 open Core.Std
 open NetML.PCap
-open NetML.Stack
+open NetML.Layer
 
 let spec =
   let open Command.Spec in
   empty
   +> anon ("filename" %: file)
 
-let process_ip ip =
-  printf "%s\n" (NetML.Stack.IPv4.to_string ip);
-  Some ip
+let process_l3 proto =
+  let open NetML.Layer.IPv4.Protocol in
+  match proto with
+  | UDP udp ->
+      printf "%s\n" (NetML.Layer.UDP.to_string udp);
+      Some udp
+  | _       -> None
 
-let rec process_protocol proto =
-  let open NetML.Stack.Ethernet.Protocol in
+let process_l2 proto =
+  let open NetML.Layer.Ethernet.Protocol in
+  match proto with
+  | IPv4 ip ->
+      printf "%s\n" (NetML.Layer.IPv4.to_string ip);
+      process_l3 ip.IPv4.protocol
+  | _ -> None
+
+let rec process_l1 proto =
+  let open NetML.Layer.Ethernet.Protocol in
   match proto with
   | Length _    -> None
   | Unsupported -> None
-  | IPv4 ip     -> process_ip ip
-  | VLAN (_, v) -> printf "VLAN "; process_protocol v
+  | IPv4 _      -> process_l2 proto
+  | VLAN (_, v) -> printf "VLAN "; process_l1 v
 
 let iterator ~ts ~data ~len =
   printf "%d %04d " ts len;
-  let open NetML.Stack.Ethernet in
-  let open NetML.Stack.Ethernet.Protocol in
+  let open NetML.Layer.Ethernet in
+  let open NetML.Layer.Ethernet.Protocol in
   let open Option.Monad_infix in
   ignore (
-    NetML.Stack.Ethernet.decode data >>= fun eth ->
-    printf "%s " (NetML.Stack.Ethernet.to_string eth);
-    process_protocol eth.protocol
+    NetML.Layer.Ethernet.decode data >>= fun eth ->
+    printf "%s " (NetML.Layer.Ethernet.to_string eth);
+    process_l1 eth.protocol
   )
 
 let operation filename =

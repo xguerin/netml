@@ -1,2 +1,2 @@
-module Stack  = NetML_Stack
+module Layer  = NetML_Layer
 module PCap   = NetML_PCap

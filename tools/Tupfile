@@ -2,7 +2,14 @@ include_rules
 
 PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
 OFLAGS    += -I ../src
-CMXLIBS   += ../src/NetML_PCap.cmx ../src/NetML_Stack.cmx ../src/NetML.cmx 
+
+CMXLIBS   =                       \
+  ../src/NetML_Layer_UDP.cmx      \
+  ../src/NetML_Layer_IPv4.cmx     \
+  ../src/NetML_Layer_Ethernet.cmx \
+  ../src/NetML_Layer.cmx          \
+  ../src/NetML_PCap.cmx           \
+  ../src/NetML.cmx 
 
 : foreach *.mli                 |> !mli |> %B.cmi | %B.cmti
 : foreach *.ml | *.cmi ../<lib> |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot

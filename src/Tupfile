@@ -1,9 +1,32 @@
 include_rules
 
 PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
-SOURCES   = NetML_Stack.ml NetML_PCap.ml
 
-: foreach *.mli               |> !mli |> %B.cmi | %B.cmti ../<lib>
-: foreach $(SOURCES) | *.cmi  |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+: NetML_Layer_UDP.mli                             |> !mli |> %B.cmi | %B.cmti ../<libmli>
+: NetML_Layer_IPv4.mli | NetML_Layer_UDP.cmi      |> !mli |> %B.cmi | %B.cmti ../<libmli>
+: NetML_Layer_Ethernet.mli | NetML_Layer_IPv4.cmi |> !mli |> %B.cmi | %B.cmti ../<libmli>
+: NetML_PCap.mli                                  |> !mli |> %B.cmi | %B.cmti ../<libmli>
 
-: NetML.ml | *.cmx            |> !ml  |> %B.o | %B.cmx | %B.cmi | %B.cmt | %B.annot ../<lib>
+DEPS  = NetML_Layer_UDP.cmi 
+: NetML_Layer_UDP.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+
+DEPS  = NetML_Layer_IPv4.cmi NetML_Layer_UDP.cmi NetML_Layer_UDP.cmx
+: NetML_Layer_IPv4.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+
+DEPS  = NetML_Layer_Ethernet.cmi NetML_Layer_IPv4.cmi NetML_Layer_IPv4.cmx 
+: NetML_Layer_Ethernet.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+
+DEPS  = NetML_PCap.cmi 
+: NetML_PCap.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+
+DEPS  =                     \
+  NetML_Layer_Ethernet.cmi  \
+  NetML_Layer_Ethernet.cmx  \
+  NetML_Layer_IPv4.cmi      \
+  NetML_Layer_IPv4.cmx      \
+  NetML_Layer_UDP.cmi       \
+  NetML_Layer_UDP.cmx
+: NetML_Layer.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmi | %B.cmt | %B.annot ../<lib>
+
+DEPS  = NetML_PCap.cmi NetML_PCap.cmx NetML_Layer.cmi NetML_Layer.cmx
+: NetML.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmi | %B.cmt | %B.annot ../<lib>
