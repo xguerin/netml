@@ -70,4 +70,4 @@ let decode data =
   | { _ } -> None
 
 let to_string v =
-  Printf.sprintf "ETH (%s -> %s)" (MAC.to_string v.source) (MAC.to_string v.destination)
+  Printf.sprintf "ETH:(%s -> %s)" (MAC.to_string v.source) (MAC.to_string v.destination)

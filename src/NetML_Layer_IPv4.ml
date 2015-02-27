@@ -16,14 +16,14 @@ module Protocol = struct
 
   let decode proto bs =
     match proto with
-    | 0x6   -> TCP bs
-    | 0x11  ->
+    | 0x06 -> TCP bs
+    | 0x11 ->
         let udp = NetML_Layer_UDP.decode bs in
         begin match udp with
         | Some v  -> UDP v
         | None    -> Unsupported
         end
-    | _     -> Unsupported
+    | _ -> Unsupported
 end
 
 type t = {
@@ -48,7 +48,7 @@ let decode data =
       _           : 16  : bigendian; (* checksum *)
       s0 : 8; s1 : 8; s2 : 8; s3 : 8;
       d0 : 8; d1 : 8; d2 : 8; d3 : 8;
-      payload     : (length - ihl * 4) : bitstring
+      payload     : (length - ihl * 4) * 8 : bitstring
   } ->
     let source = (s0, s1, s2, s3) in
     let destination = (d0, d1, d2, d3) in
@@ -57,4 +57,8 @@ let decode data =
 | { _ } -> None
 
 let to_string v =
-  Printf.sprintf "IPv4 (%s -> %s)" (Address.to_string v.source) (Address.to_string v.destination)
+  Printf.sprintf "IPv4:(%s -> %s, %5d)"
+    (Address.to_string v.source)
+    (Address.to_string v.destination)
+    v.length
+

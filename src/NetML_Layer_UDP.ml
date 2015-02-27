@@ -19,5 +19,5 @@ let decode data =
   | { _ } -> None
 
 let to_string v =
-  Printf.sprintf "UDP(%d -> %d, %d)" v.source v.destination v.length
+  Printf.sprintf "UDP:(%5d -> %5d, %5d)" v.source v.destination v.length
 

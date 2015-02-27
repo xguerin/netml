@@ -13,26 +13,27 @@ let process_l3 proto =
   | UDP udp ->
       printf "%s\n" (NetML.Layer.UDP.to_string udp);
       Some udp
-  | _       -> None
+  | Unsupported -> printf " ??? \n"; None
+  | _ -> printf " ??? \n"; None
 
 let process_l2 proto =
   let open NetML.Layer.Ethernet.Protocol in
   match proto with
   | IPv4 ip ->
-      printf "%s\n" (NetML.Layer.IPv4.to_string ip);
+      printf "%s " (NetML.Layer.IPv4.to_string ip);
       process_l3 ip.IPv4.protocol
-  | _ -> None
+  | _ -> printf " ??? \n"; None
 
 let rec process_l1 proto =
   let open NetML.Layer.Ethernet.Protocol in
   match proto with
-  | Length _    -> None
-  | Unsupported -> None
+  | Length _    -> printf " ??? \n"; None
+  | Unsupported -> printf " ??? \n"; None
   | IPv4 _      -> process_l2 proto
   | VLAN (_, v) -> printf "VLAN "; process_l1 v
 
 let iterator ~ts ~data ~len =
-  printf "%d %04d " ts len;
+  printf "%d %4d " ts len;
   let open NetML.Layer.Ethernet in
   let open NetML.Layer.Ethernet.Protocol in
   let open Option.Monad_infix in
