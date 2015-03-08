@@ -1,6 +1,6 @@
 include_rules
 
-PACKAGES  = $(PACKAGES),bitstring,bitstring.syntax
+PACKAGES  = $(PACKAGES),bitstring,ppx_bitstring.match
 
 : NetML_Layer_TCP.mli                             |> !mli |> %B.cmi | %B.cmti ../<libmli>
 : NetML_Layer_UDP.mli                             |> !mli |> %B.cmi | %B.cmti ../<libmli>

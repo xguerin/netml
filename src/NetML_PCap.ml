@@ -38,18 +38,18 @@ let endian_of = function
 
 let open_file fn =
   let bs = Bitstring.bitstring_of_file fn in
-  bitmatch bs with
-  | { ((0xa1b2c3d4_l | 0xa1b23c4d_l | 0xd4c3b2a1_l | 0x4d3cb2a1_l) as magic) : 32;
-      major   : 16 : endian (endian_of magic);
-      minor   : 16 : endian (endian_of magic);
-      _       : 32 : endian (endian_of magic); (* TZ *)
-      0_l     : 32 : endian (endian_of magic);
-      snaplen : 32 : endian (endian_of magic);
-      _       : 32 : endian (endian_of magic); (* Network *)
-      payload : -1 : bitstring
-    } ->
+  match%bitstring bs with
+  | {|  ((0xa1b2c3d4_l | 0xa1b23c4d_l | 0xd4c3b2a1_l | 0x4d3cb2a1_l) as magic) : 32;
+        major   : 16 : endian (endian_of magic);
+        minor   : 16 : endian (endian_of magic);
+        _       : 32 : endian (endian_of magic); (* TZ *)
+        0_l     : 32 : endian (endian_of magic);
+        snaplen : 32 : endian (endian_of magic);
+        _       : 32 : endian (endian_of magic); (* Network *)
+        payload : -1 : bitstring
+    |} ->
       let fmt = Format.of_int magic in
-      if fmt = Invalid then
+      if fmt = Format.Invalid then
         None
       else begin
         printf "PCAP: %s\n" fn;
@@ -61,17 +61,17 @@ let open_file fn =
           snaplen = Int32.to_int_exn snaplen; data = payload
         }
       end
-  | { _ } -> None
+  | {| _ |} -> None
 
 let rec iter f endian snaplen cnt pkt =
-  bitmatch pkt with
-  | { sec       : 32                          : endian (endian);
-      usec      : 32                          : endian (endian);
-      len       : 32                          : endian (endian);
-      _         : 32                          : endian (endian);
-      data      : (Int32.to_int_exn len) * 8  : bitstring;
-      payload   : -1                          : bitstring
-    } ->
+  match%bitstring pkt with
+  | {|  sec       : 32                          : endian (endian);
+        usec      : 32                          : endian (endian);
+        len       : 32                          : endian (endian);
+        _         : 32                          : endian (endian);
+        data      : (Int32.to_int_exn len) * 8  : bitstring;
+        payload   : -1                          : bitstring
+    |} ->
       let ilen = (Int32.to_int_exn len) in
       if ilen > snaplen then
         printf
@@ -80,9 +80,10 @@ let rec iter f endian snaplen cnt pkt =
         let ns = (Int32.to_int_exn sec) * 1_000_000_000 + (Int32.to_int_exn usec) * 1_000 in
         f ~ts:ns ~data:data ~len:ilen;
         iter f endian snaplen (cnt + 1) payload
-  | { _ } -> ()
+  | {| _ |} -> ()
 
 let iter ~f file =
+  let open Format in
   match file.format with
   | Microsecond | Nanosecond  -> iter f file.endian file.snaplen 1 file.data
   | Invalid                   -> ()

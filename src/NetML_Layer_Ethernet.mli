@@ -9,10 +9,10 @@ end
 
 module VLAN : sig
   type t = {
-    pcp       : int;
-    dei       : bool;
-    vid       : int;
-  } with fields
+    pcp : int;
+    dei : int;
+    vid : int;
+  }
 end
 
 module Protocol : sig
@@ -29,7 +29,7 @@ type t = {
   destination : MAC.t;
   source      : MAC.t;
   protocol    : Protocol.t;
-} with fields
+}
 
 val decode : Bitstring.t -> t option
 val to_string : t -> string

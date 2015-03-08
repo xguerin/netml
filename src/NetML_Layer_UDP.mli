@@ -6,7 +6,7 @@ type t = {
   destination : int;
   length      : int;
   checksum    : int;
-} with fields
+}
 
 val decode : Bitstring.t -> t option
 val to_string : t -> string

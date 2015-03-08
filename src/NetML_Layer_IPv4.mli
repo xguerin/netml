@@ -20,7 +20,7 @@ type t = {
   destination : Address.t;
   length      : int;
   protocol    : Protocol.t;
-} with fields
+}
 
 val decode : Bitstring.t -> t option
 val to_string : t -> string

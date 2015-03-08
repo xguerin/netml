@@ -1,4 +1,4 @@
-PKG str core bitstring 
+PKG str core bitstring ppx_bitstring.match
 FLG -rectypes
 
 S src

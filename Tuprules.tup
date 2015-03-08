@@ -3,11 +3,11 @@ export CAML_LD_LIBRARY_PATH
 
 LFLAGS    = -linkpkg -g -thread 
 OFLAGS    = -strict-sequence -g -annot -bin-annot -short-paths -thread -rectypes
-PACKAGES  = bin_prot.syntax,sexplib.syntax,comparelib.syntax,fieldslib.syntax,variantslib.syntax,core,core_bench,str
+PACKAGES  = core,core_bench,str
 FINDER    = ocamlfind
-SYNTAX    = camlp4o
+COMPILER  = ocamlopt
 WARNINGS  = A-4-33-40-41-42-43-34-44
 
-!ml  = |> ^ ML  %f^ $(FINDER) ocamlopt -c -w $(WARNINGS) $(OFLAGS) -syntax $(SYNTAX) -package $(PACKAGES) -o %o %f  |>
-!mli = |> ^ MLI %f^ $(FINDER) ocamlopt -c -w $(WARNINGS) $(OFLAGS) -syntax $(SYNTAX) -package $(PACKAGES) -o %o %f  |>
-!lnk = |> ^ LNK %o^ $(FINDER) ocamlopt $(LFLAGS) -syntax $(SYNTAX) -package $(PACKAGES) -o %o %f                    |>
+!ml  = |> ^ ML  %f^ $(FINDER) $(COMPILER) -c -w $(WARNINGS) $(OFLAGS) -package $(PACKAGES) -o %o %f  |>
+!mli = |> ^ MLI %f^ $(FINDER) $(COMPILER) -c -w $(WARNINGS) $(OFLAGS) -package $(PACKAGES) -o %o %f  |>
+!lnk = |> ^ LNK %o^ $(FINDER) $(COMPILER) $(LFLAGS) -package $(PACKAGES) -o %o %f                    |>
