@@ -16,10 +16,10 @@ DEPS =                  \
 : NetML_Layer_Ethernet.mli | $(DEPS) |> !mli |> %B.cmi | %B.cmti ../<libmli>
 
 DEPS  = NetML_Layer_TCP.cmi 
-: NetML_Layer_TCP.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+: NetML_Layer_TCP.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmt %B.annot  ../<lib>
 
 DEPS  = NetML_Layer_UDP.cmi 
-: NetML_Layer_UDP.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+: NetML_Layer_UDP.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmt %B.annot  ../<lib>
 
 DEPS  =                 \
   NetML_Layer_IPv4.cmi  \
@@ -27,13 +27,13 @@ DEPS  =                 \
   NetML_Layer_TCP.cmx   \
   NetML_Layer_UDP.cmi   \
   NetML_Layer_UDP.cmx
-: NetML_Layer_IPv4.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+: NetML_Layer_IPv4.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmt %B.annot  ../<lib>
 
 DEPS  = NetML_Layer_Ethernet.cmi NetML_Layer_IPv4.cmi NetML_Layer_IPv4.cmx 
-: NetML_Layer_Ethernet.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+: NetML_Layer_Ethernet.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmt %B.annot  ../<lib>
 
 DEPS  = NetML_PCap.cmi 
-: NetML_PCap.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmt | %B.annot  ../<lib>
+: NetML_PCap.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmt %B.annot  ../<lib>
 
 DEPS  =                     \
   NetML_Layer_Ethernet.cmi  \
@@ -44,7 +44,7 @@ DEPS  =                     \
   NetML_Layer_TCP.cmx       \
   NetML_Layer_UDP.cmi       \
   NetML_Layer_UDP.cmx
-: NetML_Layer.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmi | %B.cmt | %B.annot ../<lib>
+: NetML_Layer.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmi %B.cmt %B.annot ../<lib>
 
 DEPS  = NetML_PCap.cmi NetML_PCap.cmx NetML_Layer.cmi NetML_Layer.cmx
-: NetML.ml | $(DEPS) |> !ml |> %B.o | %B.cmx | %B.cmi | %B.cmt | %B.annot ../<lib>
+: NetML.ml | $(DEPS) |> !ml |> %B.o | %B.cmx %B.cmi %B.cmt %B.annot ../<lib>

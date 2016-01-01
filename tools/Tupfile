@@ -13,6 +13,6 @@ CMXLIBS   =                       \
   ../src/NetML.cmx 
 
 : foreach *.mli                 |> !mli |> %B.cmi | %B.cmti
-: foreach *.ml | *.cmi ../<lib> |> !ml  |> %B.o | %B.cmx | %B.cmt | %B.annot
+: foreach *.ml | *.cmi ../<lib> |> !ml  |> %B.o | %B.cmx %B.cmt %B.annot
 
 : $(CMXLIBS) PCap_parser.cmx | PCap_parser.o  |> !lnk |> ../bin/pcap_parser
