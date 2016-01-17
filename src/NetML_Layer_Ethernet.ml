@@ -11,9 +11,9 @@ end
 
 module VLAN = struct
   type t = {
-    pcp       : int;
-    dei       : int;
-    vid       : int;
+    pcp : int;
+    dei : bool;
+    vid : int;
   }
 end
 
