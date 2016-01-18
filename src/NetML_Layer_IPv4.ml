@@ -17,17 +17,17 @@ module Protocol = struct
   let decode proto bs =
     match proto with
     | 0x06 ->
-        let tcp = NetML_Layer_TCP.decode bs in
-        begin match tcp with
+      let tcp = NetML_Layer_TCP.decode bs in
+      begin match tcp with
         | Some v  -> TCP v
         | None    -> Unsupported
-        end
+      end
     | 0x11 ->
-        let udp = NetML_Layer_UDP.decode bs in
-        begin match udp with
+      let udp = NetML_Layer_UDP.decode bs in
+      begin match udp with
         | Some v  -> UDP v
         | None    -> Unsupported
-        end
+      end
     | _ -> Unsupported
 end
 
@@ -54,12 +54,12 @@ let decode data =
         s0 : 8; s1 : 8; s2 : 8; s3 : 8;
         d0 : 8; d1 : 8; d2 : 8; d3 : 8;
         payload     : (length - ihl * 4) * 8 : bitstring
-  |} ->
+    |} ->
     let source = (s0, s1, s2, s3) in
     let destination = (d0, d1, d2, d3) in
     let protocol = Protocol.decode proto payload in
     Some { source; destination; length; protocol }
-| {| _ |} -> None
+  | {| _ |} -> None
 
 let to_string v =
   Printf.sprintf "IPv4:(%s -> %s, %5d)"

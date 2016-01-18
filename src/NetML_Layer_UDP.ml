@@ -15,7 +15,7 @@ let decode data =
         length      : 16 : bigendian;
         checksum    : 16 : bigendian
     |} ->
-      Some { source; destination; length; checksum }
+    Some { source; destination; length; checksum }
   | {| _ |} -> None
 
 let to_string v =

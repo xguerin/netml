@@ -10,7 +10,7 @@ end
 module VLAN : sig
   type t = {
     pcp : int;
-    dei : int;
+    dei : bool;
     vid : int;
   }
 end

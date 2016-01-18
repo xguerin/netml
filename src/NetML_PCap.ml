@@ -48,19 +48,19 @@ let open_file fn =
         _       : 32 : endian (endian_of magic); (* Network *)
         payload : -1 : bitstring
     |} ->
-      let fmt = Format.of_int magic in
-      if fmt = Format.Invalid then
-        None
-      else begin
-        printf "PCAP: %s\n" fn;
-        printf "Format: %s\n" (Format.to_string fmt);
-        printf "Version: (%d, %d)\n" major minor;
-        printf "Snapshot length: %ld B\n" snaplen;
-        Some {
-          endian = endian_of magic; format = fmt; version = (major, minor);
-          snaplen = Int32.to_int_exn snaplen; data = payload
-        }
-      end
+    let fmt = Format.of_int magic in
+    if fmt = Format.Invalid then
+      None
+    else begin
+      printf "PCAP: %s\n" fn;
+      printf "Format: %s\n" (Format.to_string fmt);
+      printf "Version: (%d, %d)\n" major minor;
+      printf "Snapshot length: %ld B\n" snaplen;
+      Some {
+        endian = endian_of magic; format = fmt; version = (major, minor);
+        snaplen = Int32.to_int_exn snaplen; data = payload
+      }
+    end
   | {| _ |} -> None
 
 let rec iter f endian snaplen cnt pkt =
@@ -72,14 +72,14 @@ let rec iter f endian snaplen cnt pkt =
         data      : (Int32.to_int_exn len) * 8  : bitstring;
         payload   : -1                          : bitstring
     |} ->
-      let ilen = (Int32.to_int_exn len) in
-      if ilen > snaplen then
-        printf
+    let ilen = (Int32.to_int_exn len) in
+    if ilen > snaplen then
+      printf
         "Packet #%d: length (%d) larger than the maximum snapshot length (%d)" cnt ilen snaplen
-      else
-        let ns = (Int32.to_int_exn sec) * 1_000_000_000 + (Int32.to_int_exn usec) * 1_000 in
-        f ~ts:ns ~data:data ~len:ilen;
-        iter f endian snaplen (cnt + 1) payload
+    else
+      let ns = (Int32.to_int_exn sec) * 1_000_000_000 + (Int32.to_int_exn usec) * 1_000 in
+      f ~ts:ns ~data:data ~len:ilen;
+      iter f endian snaplen (cnt + 1) payload
   | {| _ |} -> ()
 
 let iter ~f file =

@@ -33,10 +33,10 @@ let decode data =
         _           : (offset - 5) * 32 : bitstring; (* options *)
         payload     : -1 : bitstring
     |} ->
-      let seqnum = Int32.to_int_exn seq in
-      let acknum = Int32.to_int_exn ack in
-      let length = Bitstring.bitstring_length payload in
-      Some { source; destination; seqnum; acknum; length; checksum }
+    let seqnum = Int32.to_int_exn seq in
+    let acknum = Int32.to_int_exn ack in
+    let length = Bitstring.bitstring_length payload in
+    Some { source; destination; seqnum; acknum; length; checksum }
   | {| _ |} -> None
 
 let to_string v =

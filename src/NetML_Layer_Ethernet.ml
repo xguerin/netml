@@ -33,18 +33,18 @@ module Protocol = struct
           vid                 : 12 : bigendian;
           payload             : -1 : bitstring
       |} ->
-        let nv = { VLAN.pcp; VLAN.dei; VLAN.vid } in
-        begin match decode payload with
+      let nv = { VLAN.pcp; VLAN.dei; VLAN.vid } in
+      begin match decode payload with
         | Some v  -> Some (VLAN (nv, v))
         | None    -> None
-        end
+      end
     | {|  ( 0x0800 | 0x0008 ) : 16;
           payload             : -1 : bitstring
       |} ->
-        begin match NetML_Layer_IPv4.decode payload with
+      begin match NetML_Layer_IPv4.decode payload with
         | Some v  -> Some (IPv4 v)
         | None    -> None
-        end
+      end
     | {| _ |} -> Some Unsupported
 
 end
@@ -61,13 +61,15 @@ let decode data =
         s0 : 8; s1 : 8; s2 : 8; s3 : 8; s4 : 8; s5 : 8;
         payload : -1 : bitstring
     |} ->
-      let destination = (d0, d1, d2, d3, d4, d5) in
-      let source = (s0, s1, s2, s3, s4, s5) in
-      begin match Protocol.decode payload with
+    let destination = (d0, d1, d2, d3, d4, d5) in
+    let source = (s0, s1, s2, s3, s4, s5) in
+    begin match Protocol.decode payload with
       | Some protocol -> Some { destination; source; protocol }
       | None          -> None
-      end
+    end
   | {| _ |} -> None
 
 let to_string v =
-  Printf.sprintf "ETH:(%s -> %s)" (MAC.to_string v.source) (MAC.to_string v.destination)
+  Printf.sprintf "ETH:(%s -> %s)"
+    (MAC.to_string v.source)
+    (MAC.to_string v.destination)
