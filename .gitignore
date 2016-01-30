@@ -3,6 +3,7 @@
 *.log
 *.o
 *.cmx
+*.cmo
 *.cmi
 *.cmt
 *.cmti
@@ -12,3 +13,5 @@ bin
 build-*
 samples
 .tup
+.depend
+src/parser

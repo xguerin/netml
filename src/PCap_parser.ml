@@ -5,6 +5,12 @@ open NetML.Layer
 let spec =
   let open Command.Spec in
   empty
+  +> flag "-t" no_arg ~doc:" show packet time stamp"
+  +> flag "-s" no_arg ~doc:" show packet size"
+  +> flag "-E" no_arg ~doc:" show Ethernet information"
+  +> flag "-I" no_arg ~doc:" show IPv4 information"
+  +> flag "-U" no_arg ~doc:" show UDP information"
+  +> flag "-T" no_arg ~doc:" show TCP information"
   +> anon ("filename" %: file)
 
 let process_l3 proto =
@@ -34,28 +40,32 @@ let rec process_l1 proto =
   | IPv4 _      -> process_l2 proto
   | VLAN (_, v) -> printf "VLAN "; process_l1 v
 
-let iterator ~ts ~data ~len =
-  printf "%d %4d " ts len;
+let iterator show_ts show_sz ~ts ~data ~len =
+  if show_ts then printf "%d " ts;
+  if show_sz then printf "(%4d B) " len;
   let open NetML.Layer.Ethernet in
   let open NetML.Layer.Ethernet.Protocol in
   let open Option.Monad_infix in
   ignore (
-    NetML.Layer.Ethernet.decode data >>= fun eth ->
-    printf "%s " (NetML.Layer.Ethernet.to_string eth);
-    process_l1 eth.protocol
+    NetML.Layer.Ethernet.decode data >>= (fun eth ->
+        printf "%s " (NetML.Layer.Ethernet.to_string eth);
+        process_l1 eth.protocol)
   )
 
-let operation filename =
-  match NetML.PCap.open_file filename with
-  | Some pcap -> NetML.PCap.iter ~f:iterator pcap
-  | None      -> ()
+let operation show_ts show_sz fn =
+  match NetML.PCap.open_file fn with
+  | Some pcap ->
+    NetML.PCap.iter ~f:(iterator show_ts show_sz) pcap
+  | None ->
+    Printf.printf "ERROR: %s is not a supported PCAP type\n" fn
 
 let command =
   Command.basic
   ~summary:"Parse PCAP files"
   ~readme:(fun () -> "More detailed information")
   spec
-  (fun filename () -> operation filename)
+  (fun show_ts show_sz _ _ _ _ fn () ->
+     operation show_ts show_sz fn)
 
 let () =
   Command.run ~version:"1.0" ~build_info:"RWO" command
