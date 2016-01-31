@@ -53,9 +53,16 @@ let iterator show_ts show_sz ~ts ~data ~len =
   )
 
 let operation show_ts show_sz fn =
-  match NetML.PCap.open_file fn with
+  let open NetML.PCap in
+  match open_file fn with
   | Some pcap ->
-    NetML.PCap.iter ~f:(iterator show_ts show_sz) pcap
+    let json = Header.to_yojson (header pcap) in
+    Printf.printf "%s\n" (Yojson.Safe.to_string json);
+    iter (fun pkt ->
+        let json = Packet.Header.to_yojson (Packet.header pkt) in
+        let ts = Int64.to_string (Packet.timestamp_ns pkt) in
+        Printf.printf "%s %s\n" ts (Yojson.Safe.to_string json))
+      pcap
   | None ->
     Printf.printf "ERROR: %s is not a supported PCAP type\n" fn
 

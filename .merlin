@@ -1,4 +1,4 @@
-PKG str core bitstring ppx_bitstring.ext
+PKG str core bitstring ppx_bitstring.ext ppx_deriving_yojson
 FLG -rectypes
 
 S src
