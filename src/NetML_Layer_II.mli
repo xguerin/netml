@@ -1,3 +1,7 @@
+open Bitstring
+
+module Ethernet = NetML_Layer_II_Ethernet
+
 module Protocol : sig
   type t =
     | Null
@@ -89,7 +93,8 @@ module Protocol : sig
     | ZWAVE_R3
     | WattStopper_DLM
     | ISO_14443
+    | Unsupported
     [@@deriving yojson]
 end
 
-module Ethernet = NetML_Layer_II_Ethernet
+val decode : (Protocol.t * bitstring) -> (NetML_Layer_III.Protocol.t * bitstring) option

@@ -24,4 +24,4 @@ end
 
 type t = (Header.t * VLAN.t list * Bitstring.bitstring)
 
-val decode : Bitstring.t -> t option
+val decode : Bitstring.t -> (NetML_Layer_III.Protocol.t * bitstring) option

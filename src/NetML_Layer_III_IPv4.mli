@@ -3,25 +3,15 @@ open Core.Std
 
 module Address : sig
   type t = int * int * int * int
-  val to_string : t -> string
 end
 
-module Protocol : sig
-  type t =
-    | TCP
-    | UDP
-    | Unsupported
-
-  val decode : int -> Bitstring.t -> t
+module Header : sig
+  type t = {
+    source      : Address.t;
+    destination : Address.t;
+    length      : int;
+    protocol    : NetML_Layer_IV.Protocol.t;
+  }
 end
 
-
-type t = {
-  source      : Address.t;
-  destination : Address.t;
-  length      : int;
-  protocol    : Protocol.t;
-}
-
-val decode : Bitstring.t -> t option
-val to_string : t -> string
+val decode : Bitstring.t -> (NetML_Layer_IV.Protocol.t * bitstring) option

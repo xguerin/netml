@@ -1,3 +1,7 @@
+open Bitstring
+
+module Ethernet = NetML_Layer_II_Ethernet
+
 module Protocol = struct
   type t =
     | Null
@@ -89,7 +93,12 @@ module Protocol = struct
     | ZWAVE_R3
     | WattStopper_DLM
     | ISO_14443
+    | Unsupported
     [@@deriving yojson]
 end
 
-module Ethernet = NetML_Layer_II_Ethernet
+let decode (proto, data) =
+  match proto with
+  | Protocol.Ethernet -> Ethernet.decode data
+  | _ -> None
+

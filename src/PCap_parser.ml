@@ -9,17 +9,15 @@ let spec =
   +> flag "-E" no_arg ~doc:" show Ethernet information"
   +> anon ("filename" %: file)
 
-let rec iterate = function
-  | Some (pcap) ->
-    let open Option.Monad_infix in
-    let open PCap in
-    next_packet pcap >>= fun (pkt, rem) ->
-    let pkt_hdr = Packet.header pkt in
-    begin match pkt_hdr.Packet.Header.nettype with
-      | Layer.II.Protocol.Ethernet -> None
-      | _ -> None
-    end
-  | None -> None
+let process pkt l2_proto l2 =
+  let open Option.Monad_infix in
+  let json = PCap.Packet.Header.to_yojson (PCap.Packet.header pkt) in
+  Printf.printf "%s\n" (Yojson.Safe.to_string json);
+  ignore (
+    Layer.II.decode (l2_proto, l2)  >>= fun (l3_proto, l3) ->
+    Layer.III.decode (l3_proto, l3) >>= fun (l4_proto, l4) ->
+    None
+  )
 
 let operation show_ts show_sz fn =
   let open Option.Monad_infix in
@@ -27,7 +25,7 @@ let operation show_ts show_sz fn =
     PCap.open_file fn >>= fun pcap ->
     let json = PCap.Header.to_yojson (PCap.header pcap) in
     Printf.printf "%s\n" (Yojson.Safe.to_string json);
-    iterate (Some (pcap))
+    PCap.iter process pcap
   )
 
 let command =

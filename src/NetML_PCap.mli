@@ -41,7 +41,6 @@ module Packet : sig
       rsec      : Int32.t;
       incl_len  : Int32.t;
       orig_len  : Int32.t;
-      nettype   : Protocol.t;
     } [@@deriving yojson]
   end
   type 'a t
@@ -64,4 +63,4 @@ val open_file : string -> t option
 val header : t -> Header.t
 
 (** Iterate over a PCAP file *)
-val next_packet :  t -> ('a Packet.t * t) option
+val iter :  ('a Packet.t -> Protocol.t -> bitstring -> unit) -> t -> t option

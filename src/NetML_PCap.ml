@@ -163,7 +163,6 @@ module Packet = struct
       rsec      : Int32.t;
       incl_len  : Int32.t;
       orig_len  : Int32.t;
-      nettype   : Protocol.t;
     } [@@deriving yojson]
   end
   type 'a t = (Header.t * bitstring)
@@ -215,7 +214,7 @@ let open_file fn =
 
 let header (hdr, _) = hdr
 
-let next_packet (hdr, pld) =
+let rec iter fn (hdr, pld) =
   let open Header in
   let endian = Endian.to_bitstring_endian hdr.endian in
   match%bitstring pld with
@@ -225,21 +224,21 @@ let next_packet (hdr, pld) =
        orig_len  : 32                               : endian (endian);
        data      : (Int32.to_int_exn incl_len) * 8  : bitstring;
        payload   : -1                               : bitstring
-       |} ->
+    |} ->
     if incl_len > hdr.snaplen then
-      None
+      Some (hdr, pld)
     else
       let open Packet.Header in
       let phdr = {
         sec = sec;
         rsec = rsec;
         incl_len = incl_len;
-        orig_len = orig_len;
-        nettype = hdr.nettype
+        orig_len = orig_len
       } in
       let pkt = begin match hdr.format with
         | Format.Microsecond -> Packet.create_usec phdr data
         | Format.Nanosecond -> Packet.create_nsec phdr data
       end in
-      Some (pkt, (hdr, payload))
-  | {| _ |} -> None
+      fn pkt hdr.Header.nettype data;
+      iter fn (hdr, payload)
+  | {| _ |} -> Some (hdr, pld)
