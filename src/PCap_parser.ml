@@ -9,23 +9,29 @@ let spec =
   +> flag "-E" no_arg ~doc:" show Ethernet information"
   +> anon ("filename" %: file)
 
-let process pkt l2_proto l2 =
+let build_json l2 l3 =
+  let open Layer in
+  let l2_json = ("ethernet", II.Ethernet.Header.to_yojson l2) in
+  let l3_json = ("ipv4", III.IPv4.Header.to_yojson l3) in
+  `Assoc [ l2_json; l3_json ]
+
+let process acc pkt l2_proto l2 =
   let open Option.Monad_infix in
-  let json = PCap.Packet.Header.to_yojson (PCap.Packet.header pkt) in
-  Printf.printf "%s\n" (Yojson.Safe.to_string json);
-  ignore (
-    Layer.II.decode (l2_proto, l2)  >>= fun (l3_proto, l3) ->
-    Layer.III.decode (l3_proto, l3) >>= fun (l4_proto, l4) ->
-    None
-  )
+  let open Layer in
+  II.Ethernet.header l2     >>= fun l2_hdr ->
+  II.decode (l2_proto, l2)  >>= fun (l3_proto, l3) ->
+  III.IPv4.header l3        >>= fun l3_hdr ->
+  III.decode (l3_proto, l3) >>= fun (l4_proto, l4) ->
+  Some (`List ([ build_json l2_hdr l3_hdr ]))
+
 
 let operation show_ts show_sz fn =
   let open Option.Monad_infix in
   ignore (
     PCap.open_file fn >>= fun pcap ->
-    let json = PCap.Header.to_yojson (PCap.header pcap) in
-    Printf.printf "%s\n" (Yojson.Safe.to_string json);
-    PCap.iter process pcap
+    PCap.fold_left process (Some (`List ([]))) pcap >>= fun res ->
+    Printf.printf "%s\n" (Yojson.Safe.pretty_to_string res);
+    None
   )
 
 let command =

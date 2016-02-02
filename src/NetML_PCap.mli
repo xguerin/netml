@@ -63,4 +63,7 @@ val open_file : string -> t option
 val header : t -> Header.t
 
 (** Iterate over a PCAP file *)
-val iter :  ('a Packet.t -> Protocol.t -> bitstring -> unit) -> t -> t option
+val iter :  ('a Packet.t -> Protocol.t -> bitstring -> unit) -> t -> unit
+
+(** Fold left the content of the PCap file *)
+val fold_left : ('a -> 'b Packet.t -> Protocol.t -> bitstring -> 'a) -> 'a -> t -> 'a

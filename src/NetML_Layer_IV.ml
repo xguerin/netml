@@ -2,6 +2,7 @@ module Protocol = struct
   type t =
     | TCP
     | UDP
+    [@@deriving yojson]
 end
 
 module TCP  = NetML_Layer_IV_TCP
