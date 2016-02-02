@@ -8,12 +8,13 @@ end
 
 module Protocol : sig
   type t =
-    | TCP of NetML_Layer_TCP.t
-    | UDP of NetML_Layer_UDP.t
+    | TCP
+    | UDP
     | Unsupported
 
   val decode : int -> Bitstring.t -> t
 end
+
 
 type t = {
   source      : Address.t;

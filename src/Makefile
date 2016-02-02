@@ -2,43 +2,46 @@ OCAMLC=ocamlfind ocamlc
 OCAMLOPT=ocamlfind ocamlopt
 OCAMLDEP=ocamlfind ocamldep
 
-INCLUDES= -I src
+INCLUDES=
 OCAMLFLAGS=$(INCLUDES) -package core,bitstring,ppx_bitstring.ext,ppx_deriving_yojson -thread
 OCAMLOPTFLAGS=$(INCLUDES) -package core,bitstring,ppx_bitstring.ext,ppx_deriving_yojson -thread
 
 OBJECTS =				\
-	src/NetML_Layer_UDP.cmo		\
-	src/NetML_Layer_TCP.cmo		\
-	src/NetML_Layer_IPv4.cmo	\
-	src/NetML_Layer_Ethernet.cmo	\
-	src/NetML_Layer.cmo		\
-	src/NetML_PCap.cmo		\
-	src/NetML.cmo			\
-	src/PCap_parser.cmo
+	NetML_Layer_IV_UDP.cmo		\
+	NetML_Layer_IV_TCP.cmo		\
+	NetML_Layer_IV.cmo		\
+	NetML_Layer_III_IPv4.cmo	\
+	NetML_Layer_III.cmo		\
+	NetML_Layer_II_Ethernet.cmo	\
+	NetML_Layer_II.cmo		\
+	NetML_Layer.cmo			\
+	NetML_PCap.cmo			\
+	NetML.cmo			\
+	PCap_parser.cmo
 
 all: $(OBJECTS) 
-	$(OCAMLC) -linkpkg -o src/parser $(OCAMLFLAGS) $(OBJECTS)
+	$(OCAMLC) -linkpkg -o parser $(OCAMLFLAGS) $(OBJECTS)
 
 # Common rules
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
 
-src/%.cmo: src/%.ml
+%.cmo: %.ml
 	$(OCAMLC) $(OCAMLFLAGS) -c $< -o $@
 
-src/%.cmi: src/%.mli
+%.cmi: %.mli
 	$(OCAMLC) $(OCAMLFLAGS) -c $< -o $@
 
-src/%.cmx: src/%.ml
+%.cmx: %.ml
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) -c $< -o $@
 
 # Clean up
 clean:
-	rm -f src/*.cm[iox] .depend
+	rm -f *.cm[iox] .depend
 
 # Dependencies
 
 depend:
-	$(OCAMLDEP) $(INCLUDES) src/*.mli src/*.ml > .depend
+	$(OCAMLDEP) $(INCLUDES) *.mli *.ml > .depend
 
 -include .depend

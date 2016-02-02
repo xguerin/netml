@@ -1,8 +1,6 @@
 open Bitstring
 open Core.Std
-
-exception Bad_network of Int32.t
-exception Bad_format of Int32.t
+open NetML_Layer_II
 
 module Endian = struct
   type t =
@@ -20,200 +18,108 @@ module Endian = struct
     | Bitstring.NativeEndian -> Native
 end
 
-module Network = struct
-  type t =
-    | Null
-    | Ethernet
-    | AX25
-    | IEEE802_5
-    | ARCNet_BSD
-    | SLIP
-    | PPP
-    | FDDI
-    | PPP_HDLC
-    | PPP_Ether
-    | ATM_RFC1483
-    | Raw
-    | C_HDLC
-    | IEEE802_11
-    | FRelay
-    | Loop
-    | Linux_SLL
-    | LTalk
-    | PFLog
-    | IEEE802_11_Prism
-    | IP_over_FC
-    | SunATM
-    | IEEE802_11_RadioTAP
-    | ARCNET_Linux
-    | Apple_IP_Over_IEEE1394
-    | MTP2_With_PHDR
-    | MTP2
-    | MTP3
-    | SCCP
-    | DOCSIS
-    | Linux_IRDA
-    | User0_LinkType_User15
-    | IEEE802_11_AVS
-    | BACNET_MS_TP
-    | PPP_PPPD
-    | GPRS_LLC
-    | GPF_T
-    | GPF_F
-    | Linux_LAPD
-    | Bluetooth_HCI_H4
-    | USB_Linux
-    | PPI
-    | IEEE802_15_4
-    | SITA
-    | ERF
-    | Bluetooth_HCI_H4_With_PHDR
-    | AX25_KISS
-    | LAPD
-    | PPP_With_DIR
-    | C_HDLC_With_DIR
-    | FRelay_With_DIR
-    | IPMB_Linux
-    | IEEE802_15_4_NONASK_PHY
-    | USB_Linux_MMapped
-    | FC_2
-    | FC_2_WITH_FRAME_DELIMS
-    | IPNET
-    | CAN_SOCKETCAN
-    | IPv4
-    | IPv6
-    | IEEE802_15_4_NOFCS
-    | DBUS
-    | DVB_CI
-    | MUX27010
-    | STANAG_5066_D_PDU
-    | NFLOG
-    | NetAnalyzer
-    | NetAnalyzer_Transparent
-    | IPoIB
-    | MPEG_2_TS
-    | NG40
-    | NFC_LLCP
-    | Infiniband
-    | SCTP
-    | USBPCAP
-    | RTAC_Serial
-    | Bluetooth_LE_LL
-    | NetLink
-    | Bluetooth_Linux_Monitor
-    | Bluetooth_BREDR_BB
-    | Bluetooth_LE_LL_WITH_PHDR
-    | ProfiBus_DL
-    | PKTAP
-    | EPON
-    | IPMI_HPM_2
-    | ZWAVE_R1_R2
-    | ZWAVE_R3
-    | WattStopper_DLM
-    | ISO_14443
-    [@@deriving yojson]
-  let of_int = function
-    | 0_l                               -> Null
-    | 1_l                               -> Ethernet
-    | 3_l                               -> AX25
-    | 6_l                               -> IEEE802_5
-    | 7_l                               -> ARCNet_BSD
-    | 8_l                               -> SLIP
-    | 9_l                               -> PPP
-    | 10_l                              -> FDDI
-    | 50_l                              -> PPP_HDLC
-    | 51_l                              -> PPP_Ether
-    | 100_l                             -> ATM_RFC1483
-    | 101_l                             -> Raw
-    | 104_l                             -> C_HDLC
-    | 105_l                             -> IEEE802_11
-    | 107_l                             -> FRelay
-    | 108_l                             -> Loop
-    | 113_l                             -> Linux_SLL
-    | 114_l                             -> LTalk
-    | 117_l                             -> PFLog
-    | 119_l                             -> IEEE802_11_Prism
-    | 122_l                             -> IP_over_FC
-    | 123_l                             -> SunATM
-    | 127_l                             -> IEEE802_11_RadioTAP
-    | 129_l                             -> ARCNET_Linux
-    | 138_l                             -> Apple_IP_Over_IEEE1394
-    | 139_l                             -> MTP2_With_PHDR
-    | 140_l                             -> MTP2
-    | 141_l                             -> MTP3
-    | 142_l                             -> SCCP
-    | 143_l                             -> DOCSIS
-    | 144_l                             -> Linux_IRDA
-    | i when (i >= 147_l && i <= 162_l) -> User0_LinkType_User15
-    | 163_l                             -> IEEE802_11_AVS
-    | 165_l                             -> BACNET_MS_TP
-    | 166_l                             -> PPP_PPPD
-    | 169_l                             -> GPRS_LLC
-    | 170_l                             -> GPF_T
-    | 171_l                             -> GPF_F
-    | 177_l                             -> Linux_LAPD
-    | 187_l                             -> Bluetooth_HCI_H4
-    | 189_l                             -> USB_Linux
-    | 192_l                             -> PPI
-    | 195_l                             -> IEEE802_15_4
-    | 196_l                             -> SITA
-    | 197_l                             -> ERF
-    | 201_l                             -> Bluetooth_HCI_H4_With_PHDR
-    | 202_l                             -> AX25_KISS
-    | 203_l                             -> LAPD
-    | 204_l                             -> PPP_With_DIR
-    | 205_l                             -> C_HDLC_With_DIR
-    | 206_l                             -> FRelay_With_DIR
-    | 209_l                             -> IPMB_Linux
-    | 215_l                             -> IEEE802_15_4_NONASK_PHY
-    | 220_l                             -> USB_Linux_MMapped
-    | 224_l                             -> FC_2
-    | 225_l                             -> FC_2_WITH_FRAME_DELIMS
-    | 226_l                             -> IPNET
-    | 227_l                             -> CAN_SOCKETCAN
-    | 228_l                             -> IPv4
-    | 229_l                             -> IPv6
-    | 230_l                             -> IEEE802_15_4_NOFCS
-    | 231_l                             -> DBUS
-    | 235_l                             -> DVB_CI
-    | 236_l                             -> MUX27010
-    | 237_l                             -> STANAG_5066_D_PDU
-    | 239_l                             -> NFLOG
-    | 240_l                             -> NetAnalyzer
-    | 241_l                             -> NetAnalyzer_Transparent
-    | 242_l                             -> IPoIB
-    | 243_l                             -> MPEG_2_TS
-    | 244_l                             -> NG40
-    | 245_l                             -> NFC_LLCP
-    | 247_l                             -> Infiniband
-    | 248_l                             -> SCTP
-    | 249_l                             -> USBPCAP
-    | 250_l                             -> RTAC_Serial
-    | 251_l                             -> Bluetooth_LE_LL
-    | 253_l                             -> NetLink
-    | 254_l                             -> Bluetooth_Linux_Monitor
-    | 255_l                             -> Bluetooth_BREDR_BB
-    | 256_l                             -> Bluetooth_LE_LL_WITH_PHDR
-    | 257_l                             -> ProfiBus_DL
-    | 258_l                             -> PKTAP
-    | 259_l                             -> EPON
-    | 260_l                             -> IPMI_HPM_2
-    | 261_l                             -> ZWAVE_R1_R2
-    | 262_l                             -> ZWAVE_R3
-    | 263_l                             -> WattStopper_DLM
-    | 264_l                             -> ISO_14443
-    | v                                 -> raise (Bad_network v)
-end
+let protocol_of_int = function
+  | 0_l                               -> Some Protocol.Null
+  | 1_l                               -> Some Protocol.Ethernet
+  | 3_l                               -> Some Protocol.AX25
+  | 6_l                               -> Some Protocol.IEEE802_5
+  | 7_l                               -> Some Protocol.ARCNet_BSD
+  | 8_l                               -> Some Protocol.SLIP
+  | 9_l                               -> Some Protocol.PPP
+  | 10_l                              -> Some Protocol.FDDI
+  | 50_l                              -> Some Protocol.PPP_HDLC
+  | 51_l                              -> Some Protocol.PPP_Ether
+  | 100_l                             -> Some Protocol.ATM_RFC1483
+  | 101_l                             -> Some Protocol.Raw
+  | 104_l                             -> Some Protocol.C_HDLC
+  | 105_l                             -> Some Protocol.IEEE802_11
+  | 107_l                             -> Some Protocol.FRelay
+  | 108_l                             -> Some Protocol.Loop
+  | 113_l                             -> Some Protocol.Linux_SLL
+  | 114_l                             -> Some Protocol.LTalk
+  | 117_l                             -> Some Protocol.PFLog
+  | 119_l                             -> Some Protocol.IEEE802_11_Prism
+  | 122_l                             -> Some Protocol.IP_over_FC
+  | 123_l                             -> Some Protocol.SunATM
+  | 127_l                             -> Some Protocol.IEEE802_11_RadioTAP
+  | 129_l                             -> Some Protocol.ARCNET_Linux
+  | 138_l                             -> Some Protocol.Apple_IP_Over_IEEE1394
+  | 139_l                             -> Some Protocol.MTP2_With_PHDR
+  | 140_l                             -> Some Protocol.MTP2
+  | 141_l                             -> Some Protocol.MTP3
+  | 142_l                             -> Some Protocol.SCCP
+  | 143_l                             -> Some Protocol.DOCSIS
+  | 144_l                             -> Some Protocol.Linux_IRDA
+  | i when (i >= 147_l && i <= 162_l) -> Some Protocol.User0_LinkType_User15
+  | 163_l                             -> Some Protocol.IEEE802_11_AVS
+  | 165_l                             -> Some Protocol.BACNET_MS_TP
+  | 166_l                             -> Some Protocol.PPP_PPPD
+  | 169_l                             -> Some Protocol.GPRS_LLC
+  | 170_l                             -> Some Protocol.GPF_T
+  | 171_l                             -> Some Protocol.GPF_F
+  | 177_l                             -> Some Protocol.Linux_LAPD
+  | 187_l                             -> Some Protocol.Bluetooth_HCI_H4
+  | 189_l                             -> Some Protocol.USB_Linux
+  | 192_l                             -> Some Protocol.PPI
+  | 195_l                             -> Some Protocol.IEEE802_15_4
+  | 196_l                             -> Some Protocol.SITA
+  | 197_l                             -> Some Protocol.ERF
+  | 201_l                             -> Some Protocol.Bluetooth_HCI_H4_With_PHDR
+  | 202_l                             -> Some Protocol.AX25_KISS
+  | 203_l                             -> Some Protocol.LAPD
+  | 204_l                             -> Some Protocol.PPP_With_DIR
+  | 205_l                             -> Some Protocol.C_HDLC_With_DIR
+  | 206_l                             -> Some Protocol.FRelay_With_DIR
+  | 209_l                             -> Some Protocol.IPMB_Linux
+  | 215_l                             -> Some Protocol.IEEE802_15_4_NONASK_PHY
+  | 220_l                             -> Some Protocol.USB_Linux_MMapped
+  | 224_l                             -> Some Protocol.FC_2
+  | 225_l                             -> Some Protocol.FC_2_WITH_FRAME_DELIMS
+  | 226_l                             -> Some Protocol.IPNET
+  | 227_l                             -> Some Protocol.CAN_SOCKETCAN
+  | 228_l                             -> Some Protocol.IPv4
+  | 229_l                             -> Some Protocol.IPv6
+  | 230_l                             -> Some Protocol.IEEE802_15_4_NOFCS
+  | 231_l                             -> Some Protocol.DBUS
+  | 235_l                             -> Some Protocol.DVB_CI
+  | 236_l                             -> Some Protocol.MUX27010
+  | 237_l                             -> Some Protocol.STANAG_5066_D_PDU
+  | 239_l                             -> Some Protocol.NFLOG
+  | 240_l                             -> Some Protocol.NetAnalyzer
+  | 241_l                             -> Some Protocol.NetAnalyzer_Transparent
+  | 242_l                             -> Some Protocol.IPoIB
+  | 243_l                             -> Some Protocol.MPEG_2_TS
+  | 244_l                             -> Some Protocol.NG40
+  | 245_l                             -> Some Protocol.NFC_LLCP
+  | 247_l                             -> Some Protocol.Infiniband
+  | 248_l                             -> Some Protocol.SCTP
+  | 249_l                             -> Some Protocol.USBPCAP
+  | 250_l                             -> Some Protocol.RTAC_Serial
+  | 251_l                             -> Some Protocol.Bluetooth_LE_LL
+  | 253_l                             -> Some Protocol.NetLink
+  | 254_l                             -> Some Protocol.Bluetooth_Linux_Monitor
+  | 255_l                             -> Some Protocol.Bluetooth_BREDR_BB
+  | 256_l                             -> Some Protocol.Bluetooth_LE_LL_WITH_PHDR
+  | 257_l                             -> Some Protocol.ProfiBus_DL
+  | 258_l                             -> Some Protocol.PKTAP
+  | 259_l                             -> Some Protocol.EPON
+  | 260_l                             -> Some Protocol.IPMI_HPM_2
+  | 261_l                             -> Some Protocol.ZWAVE_R1_R2
+  | 262_l                             -> Some Protocol.ZWAVE_R3
+  | 263_l                             -> Some Protocol.WattStopper_DLM
+  | 264_l                             -> Some Protocol.ISO_14443
+  | v                                 -> None
 
 module Format = struct
   type t =
     | Microsecond
     | Nanosecond
     [@@deriving yojson]
-  let of_int = function
-    | 0xa1b2c3d4_l | 0xd4c3b2a1_l -> Microsecond
-    | 0xa1b23c4d_l | 0x4d3cb2a1_l -> Nanosecond
-    | v                           -> raise (Bad_format v)
+  let of_int v =
+    if v = 0xa1b2c3d4_l || v =  0xd4c3b2a1_l then
+      Microsecond
+    else (* 0xa1b23c4d_l || 0x4d3cb2a1_l *)
+      Nanosecond
   let to_int endian = function
     | Microsecond ->
       begin match endian with
@@ -225,14 +131,16 @@ module Format = struct
         | Endian.Little -> 0xa1b23c4d_l
         | _             -> 0x4d3cb2a1_l
       end
-  let to_endian = function
-    | 0xa1b2c3d4_l | 0xa1b23c4d_l -> Endian.Big
-    | 0xd4c3b2a1_l | 0x4d3cb2a1_l -> Endian.Little
-    | v                           -> raise (Bad_format v)
-  let to_bitstring_endian = function
-    | 0xa1b2c3d4_l | 0xa1b23c4d_l -> Bitstring.BigEndian
-    | 0xd4c3b2a1_l | 0x4d3cb2a1_l -> Bitstring.LittleEndian
-    | v                           -> raise (Bad_format v)
+  let to_endian v =
+    if v = 0xa1b2c3d4_l || v = 0xa1b23c4d_l then
+      Endian.Big
+    else (* 0xd4c3b2a1_l || 0x4d3cb2a1_l *)
+      Endian.Little
+  let to_bitstring_endian v =
+    if v = 0xa1b2c3d4_l || v = 0xa1b23c4d_l then
+      Bitstring.BigEndian
+    else (* 0xd4c3b2a1_l || 0x4d3cb2a1_l *)
+      Bitstring.LittleEndian
   let to_string = function
     | Microsecond -> "us"
     | Nanosecond  -> "ns"
@@ -244,7 +152,7 @@ module Header = struct
     format  : Format.t;
     version : (int * int);
     snaplen : Int32.t;
-    nettype : Network.t;
+    nettype : Protocol.t;
   } [@@deriving yojson]
 end
 
@@ -255,7 +163,7 @@ module Packet = struct
       rsec      : Int32.t;
       incl_len  : Int32.t;
       orig_len  : Int32.t;
-      nettype   : Network.t;
+      nettype   : Protocol.t;
     } [@@deriving yojson]
   end
   type 'a t = (Header.t * bitstring)
@@ -292,18 +200,22 @@ let open_file fn =
     |} ->
     let open Header in
     let fmt = Format.of_int magic in
-    let hdr = {
-      endian = Format.to_endian magic;
-      format = fmt; version = (major, minor);
-      snaplen = snaplen;
-      nettype = Network.of_int network
-    } in
-    Some (hdr, payload)
+    begin match protocol_of_int network with
+    | Some (net) ->
+      let hdr = {
+        endian = Format.to_endian magic;
+        format = fmt; version = (major, minor);
+        snaplen = snaplen;
+        nettype = net
+      } in
+      Some (hdr, payload)
+    | None -> None
+    end
   | {| _ |} -> None
 
 let header (hdr, _) = hdr
 
-let rec iter fn cnt (hdr, pld) =
+let next_packet (hdr, pld) =
   let open Header in
   let endian = Endian.to_bitstring_endian hdr.endian in
   match%bitstring pld with
@@ -315,9 +227,7 @@ let rec iter fn cnt (hdr, pld) =
        payload   : -1                               : bitstring
        |} ->
     if incl_len > hdr.snaplen then
-      printf
-        "Packet #%d: length (%s) larger than the maximum snapshot length (%s)"
-        cnt (Int32.to_string incl_len) (Int32.to_string hdr.snaplen)
+      None
     else
       let open Packet.Header in
       let phdr = {
@@ -327,11 +237,9 @@ let rec iter fn cnt (hdr, pld) =
         orig_len = orig_len;
         nettype = hdr.nettype
       } in
-      begin match hdr.format with
-        | Format.Microsecond -> fn (Packet.create_usec phdr data)
-        | Format.Nanosecond -> fn (Packet.create_nsec phdr data)
-      end ;
-      iter fn (cnt + 1) (hdr, payload)
-  | {| _ |} -> ()
-
-let iter fn = iter fn 0
+      let pkt = begin match hdr.format with
+        | Format.Microsecond -> Packet.create_usec phdr data
+        | Format.Nanosecond -> Packet.create_nsec phdr data
+      end in
+      Some (pkt, (hdr, payload))
+  | {| _ |} -> None

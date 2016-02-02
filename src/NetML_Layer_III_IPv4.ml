@@ -10,25 +10,15 @@ end
 
 module Protocol = struct
   type t =
-    | TCP of NetML_Layer_TCP.t
-    | UDP of NetML_Layer_UDP.t
+    | TCP
+    | UDP
     | Unsupported
 
   let decode proto bs =
     match proto with
-    | 0x06 ->
-      let tcp = NetML_Layer_TCP.decode bs in
-      begin match tcp with
-        | Some v  -> TCP v
-        | None    -> Unsupported
-      end
-    | 0x11 ->
-      let udp = NetML_Layer_UDP.decode bs in
-      begin match udp with
-        | Some v  -> UDP v
-        | None    -> Unsupported
-      end
-    | _ -> Unsupported
+    | 0x06 -> TCP
+    | 0x11 -> UDP
+    | _    -> Unsupported
 end
 
 type t = {
