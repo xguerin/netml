@@ -1,4 +1,3 @@
-open Bitstring
 open NetML_Layer_III
 
 module MAC = struct
@@ -13,16 +12,12 @@ module VLAN = struct
   } [@@deriving yojson]
 end
 
-module Header = struct
-  type t = {
-    destination : MAC.t;
-    source      : MAC.t;
-    vlans       : VLAN.t list;
-    protocol    : NetML_Layer_III.Protocol.t option;
-  } [@@deriving yojson]
-end
-
-type t = (Header.t * VLAN.t list * Bitstring.bitstring)
+type t = {
+  destination : MAC.t;
+  source      : MAC.t;
+  vlans       : VLAN.t list;
+  protocol    : NetML_Layer_III.Protocol.t option;
+} [@@deriving yojson]
 
 let rec decode_protocol vlans payload =
   let open NetML.Layer.III in
@@ -43,20 +38,6 @@ let rec decode_protocol vlans payload =
 
 let decode data =
   match%bitstring data with
-  | {|  _ : 8; _ : 8; _ : 8; _ : 8; _ : 8; _ : 8;
-        _ : 8; _ : 8; _ : 8; _ : 8; _ : 8; _ : 8;
-        payload : -1 : bitstring
-    |} ->
-    let open Header in
-    let (_, proto, rem) = decode_protocol [] payload in
-    begin match proto with
-      | Some (p) -> Some (p, rem)
-      | None -> None
-    end
-  | {| _ |} -> None
-
-let header data =
-  match%bitstring data with
   | {|  d0 : 8; d1 : 8; d2 : 8; d3 : 8; d4 : 8; d5 : 8;
         s0 : 8; s1 : 8; s2 : 8; s3 : 8; s4 : 8; s5 : 8;
         payload : -1 : bitstring
@@ -64,7 +45,19 @@ let header data =
     let destination = (d0, d1, d2, d3, d4, d5) in
     let source = (s0, s1, s2, s3, s4, s5) in
     let (vlans, protocol, _) = decode_protocol [] payload in
-    let open Header in
     Some { destination; source; vlans; protocol }
+  | {| _ |} -> None
+
+let expand data =
+  match%bitstring data with
+  | {|  _ : 8; _ : 8; _ : 8; _ : 8; _ : 8; _ : 8;
+        _ : 8; _ : 8; _ : 8; _ : 8; _ : 8; _ : 8;
+        payload : -1 : bitstring
+    |} ->
+    let (_, proto, rem) = decode_protocol [] payload in
+    begin match proto with
+      | Some (p) -> Some (p, rem)
+      | None -> None
+    end
   | {| _ |} -> None
 

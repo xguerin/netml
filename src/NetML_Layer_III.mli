@@ -1,5 +1,3 @@
-open Bitstring
-
 module IPv4 = NetML_Layer_III_IPv4
 
 module Protocol : sig
@@ -9,4 +7,13 @@ module Protocol : sig
     [@@deriving yojson]
 end
 
-val decode : (Protocol.t * bitstring) -> (NetML_Layer_IV.Protocol.t * bitstring) option
+type t = (Protocol.t * Bitstring.t)
+
+type header =
+  | IPv4 of IPv4.t
+  | Unsupported
+  [@@deriving yojson]
+
+val decode : t -> header option
+
+val expand : t -> NetML_Layer_IV.t option

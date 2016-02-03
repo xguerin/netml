@@ -1,6 +1,3 @@
-open Bitstring
-open NetML_Layer_II
-
 (** PCap endianness type *)
 module Endian : sig
   type t =
@@ -29,7 +26,7 @@ module Header : sig
     format  : Format.t;
     version : (int * int);
     snaplen : Int32.t;
-    nettype : Protocol.t;
+    nettype : NetML_Layer_II.Protocol.t;
   } [@@deriving yojson]
 end
 
@@ -46,8 +43,8 @@ module Packet : sig
   type 'a t
   type usec_format
   type nsec_format
-  val create_usec : Header.t -> bitstring -> usec_format t
-  val create_nsec : Header.t -> bitstring -> nsec_format t
+  val create_usec : Header.t -> Bitstring.t -> usec_format t
+  val create_nsec : Header.t -> Bitstring.t -> nsec_format t
   val header : 'a t -> Header.t
   val timestamp_ns : usec_format t -> Int64.t
   val timestamp_ns : nsec_format t -> Int64.t
@@ -63,7 +60,7 @@ val open_file : string -> t option
 val header : t -> Header.t
 
 (** Iterate over a PCAP file *)
-val iter :  ('a Packet.t -> Protocol.t -> bitstring -> unit) -> t -> unit
+val iter :  ('a Packet.t -> NetML_Layer_II.t -> unit) -> t -> unit
 
 (** Fold left the content of the PCap file *)
-val fold_left : ('a -> 'b Packet.t -> Protocol.t -> bitstring -> 'a) -> 'a -> t -> 'a
+val fold_left : ('a -> 'b Packet.t -> NetML_Layer_II.t -> 'a) -> 'a -> t -> 'a

@@ -1,5 +1,3 @@
-open Bitstring
-
 module Ethernet = NetML_Layer_II_Ethernet
 
 module Protocol = struct
@@ -97,8 +95,23 @@ module Protocol = struct
     [@@deriving yojson]
 end
 
+type t = (Protocol.t * Bitstring.t)
+
+type header =
+  | Ethernet of Ethernet.t
+  | Unsupported
+  [@@deriving yojson]
+
 let decode (proto, data) =
   match proto with
-  | Protocol.Ethernet -> Ethernet.decode data
+  | Protocol.Ethernet ->
+    begin match Ethernet.decode data with
+      | Some (hdr)  -> Some (Ethernet (hdr))
+      | None        -> None
+    end
   | _ -> None
 
+let expand (proto, data) =
+  match proto with
+  | Protocol.Ethernet -> Ethernet.expand data
+  | _ -> None

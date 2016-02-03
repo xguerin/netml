@@ -1,5 +1,3 @@
-open Bitstring
-
 module Ethernet = NetML_Layer_II_Ethernet
 
 module Protocol : sig
@@ -97,4 +95,13 @@ module Protocol : sig
     [@@deriving yojson]
 end
 
-val decode : (Protocol.t * bitstring) -> (NetML_Layer_III.Protocol.t * bitstring) option
+type t = (Protocol.t * Bitstring.t)
+
+type header =
+  | Ethernet of Ethernet.t
+  | Unsupported
+  [@@deriving yojson]
+
+val decode : t -> header option
+
+val expand : t -> NetML_Layer_III.t option
