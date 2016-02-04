@@ -36,7 +36,7 @@ let rec decode_protocol vlans payload =
     |} -> (vlans, Some Protocol.IPv4, next)
   | {| _ |} -> ([], None, payload)
 
-let decode data =
+let decode_header data =
   match%bitstring data with
   | {|  d0 : 8; d1 : 8; d2 : 8; d3 : 8; d4 : 8; d5 : 8;
         s0 : 8; s1 : 8; s2 : 8; s3 : 8; s4 : 8; s5 : 8;
@@ -44,20 +44,16 @@ let decode data =
     |} ->
     let destination = (d0, d1, d2, d3, d4, d5) in
     let source = (s0, s1, s2, s3, s4, s5) in
-    let (vlans, protocol, _) = decode_protocol [] payload in
-    Some { destination; source; vlans; protocol }
+    let (vlans, protocol, rem) = decode_protocol [] payload in
+    Some ({ destination; source; vlans; protocol }, rem)
   | {| _ |} -> None
+
+let decode data =
+  let open Core.Option.Monad_infix in
+  decode_header data >>= fun (hdr, _) -> Some (hdr)
 
 let expand data =
-  match%bitstring data with
-  | {|  _ : 8; _ : 8; _ : 8; _ : 8; _ : 8; _ : 8;
-        _ : 8; _ : 8; _ : 8; _ : 8; _ : 8; _ : 8;
-        payload : -1 : bitstring
-    |} ->
-    let (_, proto, rem) = decode_protocol [] payload in
-    begin match proto with
-      | Some (p) -> Some (p, rem)
-      | None -> None
-    end
-  | {| _ |} -> None
-
+  let open Core.Option.Monad_infix in
+  decode_header data  >>= fun (hdr, rem) ->
+  hdr.protocol        >>= fun proto ->
+  Some (proto, rem)

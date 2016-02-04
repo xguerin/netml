@@ -1,8 +1,8 @@
 type t = {
   source      : int;
   destination : int;
-  seqnum      : int;
-  acknum      : int;
+  seqnum      : Int32.t;
+  acknum      : Int32.t;
   checksum    : int;
 } [@@deriving yojson]
 

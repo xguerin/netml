@@ -211,7 +211,7 @@ let open_file fn =
 
 let header (hdr, _) = hdr
 
-let rec iter fn (hdr, pld) =
+let decode_packet hdr pld =
   let open Core.Std in
   let open Header in
   let endian = Endian.to_bitstring_endian hdr.endian in
@@ -224,49 +224,27 @@ let rec iter fn (hdr, pld) =
        payload   : -1                               : bitstring
     |} ->
     if incl_len > hdr.snaplen then
-      ()
+      None
     else
       let open Packet.Header in
-      let phdr = {
-        sec = sec;
-        rsec = rsec;
-        incl_len = incl_len;
-        orig_len = orig_len
-      } in
+      let phdr = { sec ; rsec ; incl_len ; orig_len } in
       let pkt = begin match hdr.format with
         | Format.Microsecond -> Packet.create_usec phdr data
         | Format.Nanosecond -> Packet.create_nsec phdr data
       end in
-      fn pkt (hdr.Header.nettype, data);
-      iter fn (hdr, payload)
-  | {| _ |} -> ()
+      Some (pkt, data, payload)
+  | {| _ |} -> None
+
+let rec iter fn (hdr, pld) =
+  match decode_packet hdr pld with
+  | Some (pkt, data, next) ->
+    fn pkt (hdr.Header.nettype, data);
+    iter fn (hdr, next)
+  | None -> ()
 
 let rec fold_left fn acc (hdr, pld) =
-  let open Core.Std in
-  let open Header in
-  let endian = Endian.to_bitstring_endian hdr.endian in
-  match%bitstring pld with
-  | {| sec       : 32                               : endian (endian);
-       rsec      : 32                               : endian (endian);
-       incl_len  : 32                               : endian (endian);
-       orig_len  : 32                               : endian (endian);
-       data      : (Int32.to_int_exn incl_len) * 8  : bitstring;
-       payload   : -1                               : bitstring
-    |} ->
-    if incl_len > hdr.snaplen then
-      acc
-    else
-      let open Packet.Header in
-      let phdr = {
-        sec = sec;
-        rsec = rsec;
-        incl_len = incl_len;
-        orig_len = orig_len
-      } in
-      let pkt = begin match hdr.format with
-        | Format.Microsecond -> Packet.create_usec phdr data
-        | Format.Nanosecond -> Packet.create_nsec phdr data
-      end in
-      fold_left fn (fn acc pkt (hdr.Header.nettype, data)) (hdr, payload)
-  | {| _ |} -> acc
+  match decode_packet hdr pld with
+  | Some (pkt, data, next) ->
+    fold_left fn (fn acc pkt (hdr.Header.nettype, data)) (hdr, next)
+  | None -> acc
 

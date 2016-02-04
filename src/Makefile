@@ -3,8 +3,8 @@ OCAMLOPT=ocamlfind ocamlopt
 OCAMLDEP=ocamlfind ocamldep
 
 INCLUDES=
-OCAMLFLAGS=$(INCLUDES) -package core,bitstring,ppx_bitstring.ext,ppx_deriving_yojson -thread
-OCAMLOPTFLAGS=$(INCLUDES) -package core,bitstring,ppx_bitstring.ext,ppx_deriving_yojson -thread
+OCAMLFLAGS=$(INCLUDES) -g -package core,bitstring,ppx_bitstring.ext,ppx_deriving_yojson -thread
+OCAMLOPTFLAGS=$(INCLUDES) -g -package core,bitstring,ppx_bitstring.ext,ppx_deriving_yojson -thread
 
 OBJECTS =				\
 	NetML_Layer_IV_UDP.cmo		\

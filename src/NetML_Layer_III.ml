@@ -15,12 +15,9 @@ type header =
   [@@deriving yojson]
 
 let decode (proto, data) =
+  let open Core.Option.Monad_infix in
   match proto with
-  | Protocol.IPv4 ->
-    begin match IPv4.decode data with
-      | Some (hdr)  -> Some (IPv4 (hdr))
-      | None        -> None
-    end
+  | Protocol.IPv4 -> IPv4.decode data >>= fun hdr -> Some (IPv4 (hdr))
   | _ -> None
 
 let expand (proto, data) =
