@@ -1,6 +1,7 @@
 module Ethernet = NetML_Layer_II_Ethernet
 
 module Protocol : sig
+
   type t =
     | Null
     | Ethernet
@@ -93,6 +94,7 @@ module Protocol : sig
     | ISO_14443
     | Unsupported
     [@@deriving yojson]
+
 end
 
 type t = (Protocol.t * Bitstring.t)

@@ -1,10 +1,12 @@
 module IPv4 = NetML_Layer_III_IPv4
 
 module Protocol : sig
+
   type t =
     | IPv4
     | Unsupported
     [@@deriving yojson]
+
 end
 
 type t = (Protocol.t * Bitstring.t)

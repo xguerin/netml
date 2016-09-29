@@ -1,0 +1,6 @@
+version         = "$(pkg_version)"
+description     = "Network packet authoring and parsing"
+requires        = "core bitstring ppx_bitstring yojson ppx_deriving ppx_deriving_yojson"
+archive(byte)   = "netml.cma"
+archive(native) = "netml.cmxa"
+exists_if       = "netml.cma"

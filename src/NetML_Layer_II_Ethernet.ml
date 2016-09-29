@@ -20,7 +20,7 @@ type t = {
 } [@@deriving yojson]
 
 let rec decode_protocol vlans payload =
-  let open NetML.Layer.III in
+  let open NetML_Layer_III in
   match%bitstring payload with
   | {|  ( 0x8100 | 0x0081 ) : 16;
         pcp                 : 3;
@@ -49,11 +49,11 @@ let decode_header data =
   | {| _ |} -> None
 
 let decode data =
-  let open Core.Option.Monad_infix in
+  let open Core_kernel.Option.Monad_infix in
   decode_header data >>= fun (hdr, _) -> Some (hdr)
 
 let expand data =
-  let open Core.Option.Monad_infix in
+  let open Core_kernel.Option.Monad_infix in
   decode_header data  >>= fun (hdr, rem) ->
   hdr.protocol        >>= fun proto ->
   Some (proto, rem)

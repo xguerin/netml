@@ -1,0 +1,46 @@
+# OASIS_START
+# DO NOT EDIT (digest: c8e4f77185f5595556d0004662bc7502)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library netml
+"src/netml.cmxs": use_netml
+<src/*.ml{,i,y}>: package(bitstring)
+<src/*.ml{,i,y}>: package(core)
+<src/*.ml{,i,y}>: package(ppx_bitstring)
+<src/*.ml{,i,y}>: package(ppx_deriving)
+<src/*.ml{,i,y}>: package(ppx_deriving_yojson)
+<src/*.ml{,i,y}>: package(yojson)
+# Executable pcap_parser
+<tools/pcap_parser.{native,byte}>: package(bitstring)
+<tools/pcap_parser.{native,byte}>: package(core)
+<tools/pcap_parser.{native,byte}>: package(ppx_bitstring)
+<tools/pcap_parser.{native,byte}>: package(ppx_deriving)
+<tools/pcap_parser.{native,byte}>: package(ppx_deriving_yojson)
+<tools/pcap_parser.{native,byte}>: package(yojson)
+<tools/pcap_parser.{native,byte}>: use_netml
+<tools/*.ml{,i,y}>: package(bitstring)
+<tools/*.ml{,i,y}>: package(core)
+<tools/*.ml{,i,y}>: package(ppx_bitstring)
+<tools/*.ml{,i,y}>: package(ppx_deriving)
+<tools/*.ml{,i,y}>: package(ppx_deriving_yojson)
+<tools/*.ml{,i,y}>: package(yojson)
+<tools/*.ml{,i,y}>: use_netml
+# OASIS_STOP
+
+<src/*.ml{,i,y}>: thread
+<src/netml.{native,byte}>: thread
+
+<tools/*.ml{,i,y}>: thread
+<tools/pcap_parser.{native,byte}>: thread

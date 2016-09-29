@@ -17,9 +17,9 @@ let decode_header data =
   | {| _ |} -> None
 
 let decode data =
-  let open Core.Option.Monad_infix in
+  let open Core_kernel.Option.Monad_infix in
   decode_header data >>= fun (hdr, _) -> Some (hdr)
 
 let expand data =
-  let open Core.Option.Monad_infix in
+  let open Core_kernel.Option.Monad_infix in
   decode_header data >>= fun (_, payload) -> Some (payload)

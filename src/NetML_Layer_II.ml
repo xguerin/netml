@@ -1,6 +1,7 @@
 module Ethernet = NetML_Layer_II_Ethernet
 
 module Protocol = struct
+
   type t =
     | Null
     | Ethernet
@@ -93,6 +94,7 @@ module Protocol = struct
     | ISO_14443
     | Unsupported
     [@@deriving yojson]
+
 end
 
 type t = (Protocol.t * Bitstring.t)
@@ -102,16 +104,15 @@ type header =
   | Unsupported
   [@@deriving yojson]
 
-let decode (proto, data) =
-  match proto with
-  | Protocol.Ethernet ->
-    begin match Ethernet.decode data with
-      | Some (hdr)  -> Some (Ethernet (hdr))
-      | None        -> None
-    end
-  | _ -> None
+let decode (prot, dat) =
+  let open Core_kernel.Option.Monad_infix in
+  match prot with
+  | Protocol.Ethernet -> Ethernet.decode dat >>| fun h -> Ethernet (h)
+  | _                 -> None
+;;
 
 let expand (proto, data) =
   match proto with
   | Protocol.Ethernet -> Ethernet.expand data
-  | _ -> None
+  | _                 -> None
+;;

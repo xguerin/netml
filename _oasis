@@ -1,0 +1,36 @@
+AlphaFeatures:          ocamlbuild_more_args
+Authors:                Xavier Guérin
+BetaFeatures:           section_object
+BuildTools:             ocamlbuild
+Description:            Network packets parsing and authoring
+FilesAB:                META.ab
+FindlibVersion:         >= 1.3.2
+Homepage:               https://github.com/xguerin/netml
+License:                ISC
+Name:                   netml
+OASISFormat:            0.4
+OCamlVersion:           >= 4.03
+Plugins:                DevFiles (0.4)
+Synopsis:               Network packets parsing and authoring
+Version:                0.1.0
+
+SourceRepository github
+  Type:     git
+  Location: https://github.com/xguerin/netml.git
+
+Library netml
+  Path:           src/
+  Pack:           false
+  Modules:        NetML
+  BuildDepends:   core,
+                  bitstring,
+                  ppx_bitstring,
+                  yojson,
+                  ppx_deriving,
+                  ppx_deriving_yojson
+
+Executable pcap_parser
+  Path:           tools/
+  MainIs:         pcap_parser.ml
+  CompiledObject: best
+  BuildDepends:   netml

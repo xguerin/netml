@@ -9,9 +9,7 @@
 *.cmti
 *.annot
 *.cache
-bin
-build-*
+*.mllib
+*.mldylib
+_build
 samples
-.tup
-.depend
-src/parser

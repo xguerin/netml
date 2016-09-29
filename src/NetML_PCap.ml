@@ -1,17 +1,23 @@
 module Endian = struct
+
   type t =
     | Big
     | Little
     | Native
-    [@@deriving yojson]
+  [@@deriving yojson]
+
   let to_bitstring_endian = function
-    | Big -> Bitstring.BigEndian
+    | Big    -> Bitstring.BigEndian
     | Little -> Bitstring.LittleEndian
     | Native -> Bitstring.NativeEndian
+  ;;
+  
   let of_bitstring_endian = function
-    | Bitstring.BigEndian -> Big
+    | Bitstring.BigEndian    -> Big
     | Bitstring.LittleEndian -> Little
     | Bitstring.NativeEndian -> Native
+  ;;
+
 end
 
 let protocol_of_int proto =
@@ -107,144 +113,166 @@ let protocol_of_int proto =
   | 263_l                             -> Some WattStopper_DLM
   | 264_l                             -> Some ISO_14443
   | v                                 -> None
+;;
 
-module Format = struct
-  type t =
+module Precision = struct
+
+   type t =
     | Microsecond
     | Nanosecond
-    [@@deriving yojson]
-  let of_int v =
-    if v = 0xa1b2c3d4_l || v =  0xd4c3b2a1_l then
-      Microsecond
-    else (* 0xa1b23c4d_l || 0x4d3cb2a1_l *)
-      Nanosecond
-  let to_int endian = function
-    | Microsecond ->
-      begin match endian with
-        | Endian.Big -> 0xa1b2c3d4_l
-        | _          -> 0xd4c3b2a1_l
-      end
-    | Nanosecond  ->
-      begin match endian with
-        | Endian.Little -> 0xa1b23c4d_l
-        | _             -> 0x4d3cb2a1_l
-      end
-  let to_endian v =
-    if v = 0xa1b2c3d4_l || v = 0xa1b23c4d_l then
-      Endian.Big
-    else (* 0xd4c3b2a1_l || 0x4d3cb2a1_l *)
-      Endian.Little
-  let to_bitstring_endian v =
-    if v = 0xa1b2c3d4_l || v = 0xa1b23c4d_l then
-      Bitstring.BigEndian
-    else (* 0xd4c3b2a1_l || 0x4d3cb2a1_l *)
-      Bitstring.LittleEndian
+  [@@deriving yojson]
+
   let to_string = function
     | Microsecond -> "us"
     | Nanosecond  -> "ns"
+  ;;
+
+end
+
+module Format = struct
+
+  type t = Endian.t * Precision.t [@@deriving yojson]
+
+  let decode = function
+    | 0xa1b2c3d4_l -> Some (Endian.Big    , Precision.Microsecond)
+    | 0xd4c3b2a1_l -> Some (Endian.Little , Precision.Microsecond)
+    | 0xa1b23c4d_l -> Some (Endian.Big    , Precision.Nanosecond)
+    | 0x4d3cb2a1_l -> Some (Endian.Little , Precision.Nanosecond)
+    | _            -> None
+  ;;
+
+  let encode = function
+    | (Endian.Big , Precision.Microsecond) -> 0xa1b2c3d4_l
+    | (_          , Precision.Microsecond) -> 0xd4c3b2a1_l
+    | (Endian.Big , Precision.Nanosecond)  -> 0xa1b23c4d_l
+    | (_          , Precision.Nanosecond)  -> 0x4d3cb2a1_l
+  ;;
+
 end
 
 module Header = struct
+
   type t = {
-    endian  : Endian.t;
     format  : Format.t;
     version : (int * int);
     snaplen : Int32.t;
     nettype : NetML_Layer_II.Protocol.t;
   } [@@deriving yojson]
+
 end
 
 module Packet = struct
+
   module Header = struct
+
     type t = {
       sec       : Int32.t;
       rsec      : Int32.t;
       incl_len  : Int32.t;
       orig_len  : Int32.t;
     } [@@deriving yojson]
+
   end
-  type 'a t = (Header.t * Bitstring.t)
-  type usec_format
-  type nsec_format
-  let create_usec hdr data = (hdr, data)
-  let create_nsec hdr data = (hdr, data)
-  let header (hdr, _) = hdr
-  let timestamp_ns : usec_format t -> Int64.t = fun (hdr, _) ->
+
+  type t = Header.t * Bitstring.t
+
+  let timestamp prec (hdr, _) =
     let open Core.Std.Int64 in
     let open Header in
-    (of_int32 hdr.sec) * (of_int 1_000_000_000) +
-    (of_int32 hdr.rsec) * (of_int 1_000)
-  let timestamp_ns : nsec_format t -> Int64.t = fun (hdr, _) ->
-    let open Core.Std.Int64 in
-    let open Header in
-    (of_int32 hdr.sec) * (of_int 1_000_000_000) + (of_int32 hdr.rsec)
+    let nsecs = (of_int32 hdr.sec) * (of_int 1_000_000_000) in
+    match prec with
+    | Precision.Microsecond -> nsecs + (Int64.of_int32 hdr.rsec) * (Int64.of_int 1_000)
+    | Precision.Nanosecond  -> nsecs + (Int64.of_int32 hdr.rsec)
+  ;;
+
 end
 
 type t = (Header.t * Bitstring.t)
 
 let open_file fn =
+  let open Core_kernel.Option.Monad_infix in
+  let open Header in
   let bs = Bitstring.bitstring_of_file fn in
   match%bitstring bs with
-  | {|  ((0xa1b2c3d4_l | 0xa1b23c4d_l | 0xd4c3b2a1_l | 0x4d3cb2a1_l) as magic) : 32;
-        major   : 16 : endian (Format.to_bitstring_endian magic);
-        minor   : 16 : endian (Format.to_bitstring_endian magic);
-        _       : 32 : endian (Format.to_bitstring_endian magic); (* TZ *)
-        0_l     : 32 : endian (Format.to_bitstring_endian magic);
-        snaplen : 32 : endian (Format.to_bitstring_endian magic);
-        network : 32 : endian (Format.to_bitstring_endian magic);
-        payload : -1 : bitstring
+  | {| (0xa1b2c3d4_l | 0xa1b23c4d_l) as magic : 32
+       ; major                                : 16 : bigendian
+       ; minor                                : 16 : bigendian
+       ; _                                    : 32
+       ; 0_l                                  : 32
+       ; snaplen                              : 32 : bigendian
+       ; network                              : 32 : bigendian
+       ; payload                              : -1 : bitstring
     |} ->
-    let open Header in
-    let fmt = Format.of_int magic in
-    begin match protocol_of_int network with
-    | Some (net) ->
-      let hdr = {
-        endian = Format.to_endian magic;
-        format = fmt; version = (major, minor);
-        snaplen = snaplen;
-        nettype = net
-      } in
-      Some (hdr, payload)
-    | None -> None
-    end
+    Format.decode magic >>= fun format ->
+    protocol_of_int network >>= fun nettype ->
+    let hdr = {
+      format;
+      version = (major, minor);
+      snaplen;
+      nettype
+    } in
+    Some (hdr, payload)
+  | {| (0xd4c3b2a1_l | 0x4d3cb2a1_l) as magic : 32
+       ; major                                : 16 : littleendian
+       ; minor                                : 16 : littleendian
+       ; _                                    : 32
+       ; 0_l                                  : 32
+       ; snaplen                              : 32 : littleendian
+       ; network                              : 32 : littleendian
+       ; payload                              : -1 : bitstring
+    |} ->
+    Format.decode magic >>= fun format ->
+    protocol_of_int network >>= fun nettype ->
+    let hdr = {
+      format;
+      version = (major, minor);
+      snaplen;
+      nettype
+    } in
+    Some (hdr, payload)
   | {| _ |} -> None
+;;
 
-let header (hdr, _) = hdr
+let header (hdr, _) =
+  hdr
+;;
+
+let layerII ghdr (_, pdat) =
+  (ghdr.Header.nettype, pdat)
+;;
 
 let decode_packet hdr pld =
-  let open Core.Std in
   let open Header in
-  let endian = Endian.to_bitstring_endian hdr.endian in
+  let open Packet.Header in
+  let (endian, _) = hdr.format in
+  let bsendian = Endian.to_bitstring_endian endian in
   match%bitstring pld with
-  | {| sec       : 32                               : endian (endian);
-       rsec      : 32                               : endian (endian);
-       incl_len  : 32                               : endian (endian);
-       orig_len  : 32                               : endian (endian);
-       data      : (Int32.to_int_exn incl_len) * 8  : bitstring;
-       payload   : -1                               : bitstring
+  | {| sec      : 32                          : endian (bsendian)
+     ; rsec     : 32                          : endian (bsendian)
+     ; incl_len : 32                          : endian (bsendian)
+     ; orig_len : 32                          : endian (bsendian)
+     ; data     : (Int32.to_int incl_len) * 8 : bitstring
+     ; payload  : -1                          : bitstring
     |} ->
     if incl_len > hdr.snaplen then
       None
     else
-      let open Packet.Header in
       let phdr = { sec ; rsec ; incl_len ; orig_len } in
-      let pkt = begin match hdr.format with
-        | Format.Microsecond -> Packet.create_usec phdr data
-        | Format.Nanosecond -> Packet.create_nsec phdr data
-      end in
-      Some (pkt, data, payload)
+      Some ((phdr, data), payload)
   | {| _ |} -> None
+;;
 
-let rec iter fn (hdr, pld) =
-  match decode_packet hdr pld with
-  | Some (pkt, data, next) ->
-    fn pkt (hdr.Header.nettype, data);
-    iter fn (hdr, next)
+let rec iter fn (ghdr, pld) =
+  match decode_packet ghdr pld with
+  | Some (pkt, next) ->
+    fn ghdr pkt;
+    iter fn (ghdr, next)
   | None -> ()
+;;
 
-let rec fold_left fn acc (hdr, pld) =
-  match decode_packet hdr pld with
-  | Some (pkt, data, next) ->
-    fold_left fn (fn acc pkt (hdr.Header.nettype, data)) (hdr, next)
+let rec fold_left fn acc (ghdr, pld) =
+  match decode_packet ghdr pld with
+  | Some (pkt, next) ->
+    fold_left fn (fn acc ghdr pkt) (ghdr, next)
   | None -> acc
-
+;;

@@ -1,9 +1,9 @@
-PKG str core bitstring ppx_bitstring.ext ppx_deriving_yojson
+PKG str core bitstring ppx_bitstring ppx_deriving ppx_deriving_yojson
 FLG -rectypes
 
 S src
+S tools
 
-B build-default/benchmarks
-B build-default/src
-B build-default/tests
-B build-default/tools
+B _build/src
+B _build/tools
+B +threads
