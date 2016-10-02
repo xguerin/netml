@@ -14,14 +14,24 @@ Plugins:                DevFiles (0.4)
 Synopsis:               Network packets parsing and authoring
 Version:                0.1.0
 
-SourceRepository github
+SourceRepository "github"
   Type:     git
   Location: https://github.com/xguerin/netml.git
 
-Library netml
+Library "netml"
   Path:           src/
   Pack:           false
-  Modules:        NetML
+  Modules:        NetML,
+                  NetML_Layer,
+                  NetML_Layer_II,
+                  NetML_Layer_III,
+                  NetML_Layer_III_IPv4,
+                  NetML_Layer_II_Ethernet,
+                  NetML_Layer_IV,
+                  NetML_Layer_IV_TCP,
+                  NetML_Layer_IV_UDP,
+                  NetML_PCap
+  CompiledObject: best
   BuildDepends:   core,
                   bitstring,
                   ppx_bitstring,
@@ -29,7 +39,7 @@ Library netml
                   ppx_deriving,
                   ppx_deriving_yojson
 
-Executable pcap_parser
+Executable "pcap_parser"
   Path:           tools/
   MainIs:         pcap_parser.ml
   CompiledObject: best
