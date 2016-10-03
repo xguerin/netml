@@ -55,17 +55,15 @@ module Packet : sig
 
   end
 
-  type t
+  type t = Header.t * Bitstring.t
 
   val timestamp : Precision.t -> t -> Int64.t
 
 end
 
-type t
+type t = Header.t * Bitstring.t
 
 val open_file : string -> t option
-
-val header : t -> Header.t
 
 val layerII : Header.t -> Packet.t -> NetML_Layer_II.t
 

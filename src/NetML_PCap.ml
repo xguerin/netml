@@ -187,7 +187,7 @@ module Packet = struct
 
 end
 
-type t = (Header.t * Bitstring.t)
+type t = Header.t * Bitstring.t
 
 let open_file fn =
   let open Core_kernel.Option.Monad_infix in
@@ -231,10 +231,6 @@ let open_file fn =
     } in
     Some (hdr, payload)
   | {| _ |} -> None
-;;
-
-let header (hdr, _) =
-  hdr
 ;;
 
 let layerII ghdr (_, pdat) =

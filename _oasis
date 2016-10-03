@@ -31,7 +31,6 @@ Library "netml"
                   NetML_Layer_IV_TCP,
                   NetML_Layer_IV_UDP,
                   NetML_PCap
-  CompiledObject: best
   BuildDepends:   core,
                   bitstring,
                   ppx_bitstring,
@@ -42,5 +41,6 @@ Library "netml"
 Executable "pcap_parser"
   Path:           tools/
   MainIs:         pcap_parser.ml
+  Install:        false
   CompiledObject: best
   BuildDepends:   netml
