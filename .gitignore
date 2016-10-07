@@ -7,8 +7,6 @@
 *.cmti
 *.cmx
 *.log
-*.mldylib
-*.mllib
 *.native
 *.o
 _build
