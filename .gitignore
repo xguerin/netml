@@ -13,3 +13,5 @@ _build
 netml.install
 samples
 setup.exe
+setup.data
+META
