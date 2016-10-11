@@ -43,4 +43,5 @@ Executable "pcap_parser"
   MainIs:         pcap_parser.ml
   Install:        false
   CompiledObject: best
-  BuildDepends:   netml
+  BuildDepends:   core,
+                  netml
