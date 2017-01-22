@@ -272,3 +272,8 @@ let rec fold_left fn acc (ghdr, pld) =
     fold_left fn (fn acc ghdr pkt) (ghdr, next)
   | None -> acc
 ;;
+
+let next (ghdr, pld) =
+  match decode_packet ghdr pld with
+  | Some (pkt, next) -> (ghdr, next), Some (pkt)
+  | None -> (ghdr, pld), None

@@ -70,3 +70,5 @@ val layerII : Header.t -> Packet.t -> NetML_Layer_II.t
 val iter :  (Header.t -> Packet.t -> unit) -> t -> unit
 
 val fold_left : ('a -> Header.t -> Packet.t -> 'a) -> 'a -> t -> 'a
+
+val next : t -> t * Packet.t option
